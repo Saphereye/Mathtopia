@@ -1,12 +1,26 @@
 import pyglet
 from pyglet.window import key
+from random import shuffle
 import os
+import sys
+
+
+# region Function to help make exe
+def ResourcePath(relativePath):
+    try:
+        basePath = sys._MEIPASS
+    except Exception:
+        basePath = os.path.abspath(".")
+
+    return os.path.join(basePath, relativePath)
+
+
+# endregion
 
 # region WorldInfo
-cwd = os.getcwd()+'/'
 window = pyglet.window.Window()
 bgMusicPlayer = pyglet.media.Player()
-bgMusic = pyglet.media.load(cwd+"Music/Vincent Rubinetti - Quaternions.mp3")
+bgMusic = pyglet.media.load(ResourcePath("Music/Vincent Rubinetti - Quaternions.mp3"))
 bgMusicPlayer.queue(bgMusic)
 bgMusicPlayer.play()
 bgMusicPlayer.loop = True
@@ -17,12 +31,10 @@ worldX = 50
 worldY = 50
 
 currentLevel = 0
-levelNames = ["1+2=3"]
+numberOfLevels = 6
 
-pyglet.font.add_file(cwd+'Font/Minecraft.ttf')
+pyglet.font.add_file(ResourcePath('Font/Minecraft.ttf'))
 minecraftText = pyglet.font.load('Minecraft')
-
-
 
 # endregion
 
@@ -36,25 +48,25 @@ goalLabel = pyglet.text.Label('Goal', font_name='Minecraft', font_size=20, x=462
 # endregion
 
 # region Loading Images
-playerImage = pyglet.image.load(cwd+'Images/Player.png')
+playerImage = pyglet.image.load(ResourcePath('Images/Player.png'))
 
-plusImage = pyglet.image.load(cwd+'Images/Plus.png')
-minusImage = pyglet.image.load(cwd+'Images/Minus.png')
-multiplicationImage = pyglet.image.load(cwd+'Images/Multiplication.png')
-divisionImage = pyglet.image.load(cwd+'Images/Division.png')
+plusImage = pyglet.image.load(ResourcePath('Images/Plus.png'))
+minusImage = pyglet.image.load(ResourcePath('Images/Minus.png'))
+multiplicationImage = pyglet.image.load(ResourcePath('Images/Multiplication.png'))
+divisionImage = pyglet.image.load(ResourcePath('Images/Division.png'))
 
-oneImage = pyglet.image.load(cwd+'Images/One.png')
-twoImage = pyglet.image.load(cwd+'Images/Two.png')
-threeImage = pyglet.image.load(cwd+'Images/Three.png')
-fourImage = pyglet.image.load(cwd+'Images/Four.png')
-fiveImage = pyglet.image.load(cwd+'Images/Five.png')
-sixImage = pyglet.image.load(cwd+'Images/Six.png')
-sevenImage = pyglet.image.load(cwd+'Images/Seven.png')
-eightImage = pyglet.image.load(cwd+'Images/Eight.png')
-nineImage = pyglet.image.load(cwd+'Images/Nine.png')
-zeroImage = pyglet.image.load(cwd+'Images/Zero.png')
+oneImage = pyglet.image.load(ResourcePath('Images/One.png'))
+twoImage = pyglet.image.load(ResourcePath('Images/Two.png'))
+threeImage = pyglet.image.load(ResourcePath('Images/Three.png'))
+fourImage = pyglet.image.load(ResourcePath('Images/Four.png'))
+fiveImage = pyglet.image.load(ResourcePath('Images/Five.png'))
+sixImage = pyglet.image.load(ResourcePath('Images/Six.png'))
+sevenImage = pyglet.image.load(ResourcePath('Images/Seven.png'))
+eightImage = pyglet.image.load(ResourcePath('Images/Eight.png'))
+nineImage = pyglet.image.load(ResourcePath('Images/Nine.png'))
+zeroImage = pyglet.image.load(ResourcePath('Images/Zero.png'))
 
-backgroundImage = pyglet.image.load(cwd+'Images/Background.png')
+backgroundImage = pyglet.image.load(ResourcePath('Images/Background.png'))
 
 
 # endregion
@@ -242,11 +254,11 @@ def EvaluateWorld():
     # As H and V both are traversed, current level CAN be increased twice in same level
     # =================================CAUTION==========================================
     if currentLevel == 1:
-        for i in finalH:
-            if i == 3:
+        for x in finalH:
+            if x == 3:
                 currentLevel = 2
-        for i in finalV:
-            if i == 3:
+        for y in finalV:
+            if y == 3:
                 currentLevel = 2
     elif currentLevel == 2:
         for i in finalH:
@@ -262,6 +274,16 @@ def EvaluateWorld():
         for i in finalV:
             if i == 9:
                 currentLevel += 1
+    elif currentLevel == 4:
+        for i in finalH:
+            for j in finalV:
+                if i - j == 6:
+                    currentLevel += 1
+    elif currentLevel == 5:
+        for i in finalH:
+            for j in finalV:
+                if i - j == 4:
+                    currentLevel += 1
 
 
 def LevelNameLabelDraw(labelText, x, y):
@@ -272,6 +294,11 @@ def LevelNameLabelDraw(labelText, x, y):
 def GoalLabelDraw(goalNumber):
     goalNumberLabel = pyglet.text.Label(str(goalNumber), font_name='Minecraft', font_size=18, x=485, y=120)
     goalNumberLabel.draw()
+
+
+def WorldMultiplierDraw(multiplier):
+    worldMultiplierLabel = pyglet.text.Label(multiplier, font_name='Minecraft', font_size=40, x=485, y=270)
+    worldMultiplierLabel.draw()
 
 
 def CallLevel(levelNumber):
@@ -320,11 +347,21 @@ def CallLevel(levelNumber):
         """
         3-7+5*2 = 6
         5*2+3-7 = 6
+        but '-' is more interesting =>
         5*2-7+3 = 6
         7+5-3*2 = 6
         """
         LevelNameLabelDraw("Complexity++", 50, 375)
         GoalLabelDraw(6)
+        WorldMultiplierDraw('-')
+        playerLevel4.Draw()
+        fiveLevel4.Draw()
+        twoLevel4.Draw()
+        sevenLevel4.Draw()
+        threeLevel4.Draw()
+        plusSymbolLevel4.Draw()
+        multiplicationSymbolLevel4.Draw()
+        symbolList = [fiveLevel4, twoLevel4, sevenLevel4, threeLevel4, plusSymbolLevel4, multiplicationSymbolLevel4]
     elif levelNumber == 5:
         """
         5+2-3 = 4
@@ -333,53 +370,50 @@ def CallLevel(levelNumber):
         25-7*3 = 4
         5-7+2*3 = 4
         """
-        LevelNameLabelDraw("BODMAS", 50, 375)
+        LevelNameLabelDraw("Convergence", 50, 375)
         GoalLabelDraw(4)
+        WorldMultiplierDraw('-')
+        playerLevel5.Draw()
+        fiveLevel5.Draw()
+        twoLevel5.Draw()
+        sevenLevel5.Draw()
+        threeLevel5.Draw()
+        plusSymbolLevel5.Draw()
+        multiplicationSymbolLevel5.Draw()
+        symbolList = [fiveLevel5, twoLevel5, sevenLevel5, threeLevel5, plusSymbolLevel5, multiplicationSymbolLevel5]
+
     elif levelNumber == 6:
-        """
-        31-24 = 7
-        3*2+1 = 7
-        2*4-1 = 7
-        4*2-1 = 7
-        1*4+3 = 7
-        3*1+4 = 7
-        4*1+3 = 7
-        24/3-1 = 7
-        3*4/2+1 = 7
-        """
-        LevelNameLabelDraw("Cartesian's 7", 50, 375)
-        GoalLabelDraw(7)
-    elif levelNumber == 7:
         """
         6+9-4*2 = 7 <=
         9+6-2*4 = 7
-        4-9+2*6 = 7
-        2*6+4-9 = 7
+        4-9+2*6 = 7 <=
+        2*6+4-9 = 7 <=
         2*6-9+4 = 7
         9*2/6+4 = 7
         4+2/6*9 = 7
         2*9/6+4 = 7"""
         LevelNameLabelDraw("Nice 7", 50, 375)
         GoalLabelDraw(7)
-    elif levelNumber == 8:
-        """
-        9+7-5*3 = 1
-        5-7+9/3 = 1
-        9/3-7+5 = 1
-        """
-        LevelNameLabelDraw("Odd one out", 50, 375)
-        GoalLabelDraw(1)
+        WorldMultiplierDraw('÷')
+        playerLevel6.Draw()
+        minusSymbolLevel6.Draw()
+        multiplicationSymbolLevel6.Draw()
+        sixLevel6.Draw()
+        nineLevel6.Draw()
+        fourLevel6.Draw()
+        twoLevel6.Draw()
+        symbolList = [sixLevel6, nineLevel6, fourLevel6, twoLevel6, minusSymbolLevel6, multiplicationSymbolLevel6]
+
     else:
-        titleScreenLabel.draw()
+        currentLevel = 1
 
 
 # endregion
 
 # region Batches
 groundBatch = pyglet.graphics.Batch()
-cellBatchLevel1 = pyglet.graphics.Batch()
-cellBatchLevel2 = pyglet.graphics.Batch()
-cellBatchLevel3 = pyglet.graphics.Batch()
+for i in range(1, numberOfLevels + 1):
+    exec(f"cellBatchLevel{i} = pyglet.graphics.Batch()")
 userInterface = pyglet.graphics.Batch()
 # endregion
 
@@ -391,31 +425,58 @@ symbolList = []
 
 # region Level 1
 playerLevel1 = Player(0, 0, 30, 30, cellBatchLevel1, True, playerImage)
-plusSymbolLevel1 = Symbol(60, 60, 30, 30, cellBatchLevel1, True, '+', plusImage)
-oneLevel1 = Number(30, 120, 30, 30, cellBatchLevel1, True, 1, oneImage)
-twoLevel1 = Number(150, 150, 30, 30, cellBatchLevel1, True, 2, twoImage)
-threeLevel1 = Number(60, 30, 30, 30, cellBatchLevel1, True, 3, threeImage)
+plusSymbolLevel1 = Symbol(150, 120, 30, 30, cellBatchLevel1, True, '+', plusImage)
+oneLevel1 = Number(120, 90, 30, 30, cellBatchLevel1, True, 1, oneImage)
+twoLevel1 = Number(120, 150, 30, 30, cellBatchLevel1, True, 2, twoImage)
 
 # endregion
 # region Level 2
 playerLevel2 = Player(0, 0, 30, 30, cellBatchLevel2, True, playerImage)
 plusSymbolLevel2 = Symbol(60, 60, 30, 30, cellBatchLevel2, True, '+', plusImage)
-minusSymbolLevel2 = Symbol(90, 60, 30, 30, cellBatchLevel2, True, '-', minusImage)
-sixLevel2 = Number(30, 120, 30, 30, cellBatchLevel2, True, 6, sixImage)
-fourLevel2 = Number(150, 150, 30, 30, cellBatchLevel2, True, 4, fourImage)
+minusSymbolLevel2 = Symbol(150, 150, 30, 30, cellBatchLevel2, True, '-', minusImage)
+sixLevel2 = Number(60, 90, 30, 30, cellBatchLevel2, True, 6, sixImage)
+fourLevel2 = Number(30, 60, 30, 30, cellBatchLevel2, True, 4, fourImage)
 sevenLevel2 = Number(60, 30, 30, 30, cellBatchLevel2, True, 7, sevenImage)
 
 # endregion
 # region Level 3
 playerLevel3 = Player(0, 0, 30, 30, cellBatchLevel3, True, playerImage)
-divisionSymbolLevel3 = Symbol(60, 60, 30, 30, cellBatchLevel3, True, '/', divisionImage)
-twoLevel3 = Number(30, 210, 30, 30, cellBatchLevel3, True, 2, twoImage)
-sevenLevel3 = Number(90, 120, 30, 30, cellBatchLevel3, True, 7, sevenImage)
-threeLevel3 = Number(30, 120, 30, 30, cellBatchLevel3, True, 3, threeImage)
+divisionSymbolLevel3 = Symbol(90, 90, 30, 30, cellBatchLevel3, True, '/', divisionImage)
+twoLevel3 = Number(60, 60, 30, 30, cellBatchLevel3, True, 2, twoImage)
+sevenLevel3 = Number(180, 90, 30, 30, cellBatchLevel3, True, 7, sevenImage)
+threeLevel3 = Number(120, 150, 30, 30, cellBatchLevel3, True, 3, threeImage)
+
+# endregion
+# region Level 4
+playerLevel4 = Player(0, 0, 30, 30, cellBatchLevel4, True, playerImage)
+multiplicationSymbolLevel4 = Symbol(30, 30, 30, 30, cellBatchLevel4, True, '*', multiplicationImage)
+plusSymbolLevel4 = Symbol(60, 60, 30, 30, cellBatchLevel4, True, '+', plusImage)
+fiveLevel4 = Number(90, 90, 30, 30, cellBatchLevel4, True, 5, fiveImage)
+twoLevel4 = Number(30, 60, 30, 30, cellBatchLevel4, True, 2, twoImage)
+sevenLevel4 = Number(90, 30, 30, 30, cellBatchLevel4, True, 7, sevenImage)
+threeLevel4 = Number(90, 60, 30, 30, cellBatchLevel4, True, 3, threeImage)
+# endregion
+# region Level 5
+playerLevel5 = Player(0, 0, 30, 30, cellBatchLevel5, True, playerImage)
+multiplicationSymbolLevel5 = Symbol(60, 30, 30, 30, cellBatchLevel5, True, '*', multiplicationImage)
+plusSymbolLevel5 = Symbol(60, 150, 30, 30, cellBatchLevel5, True, '+', plusImage)
+fiveLevel5 = Number(30, 90, 30, 30, cellBatchLevel5, True, 5, fiveImage)
+twoLevel5 = Number(90, 90, 30, 30, cellBatchLevel5, True, 2, twoImage)
+sevenLevel5 = Number(150, 30, 30, 30, cellBatchLevel5, True, 7, sevenImage)
+threeLevel5 = Number(30, 60, 30, 30, cellBatchLevel5, True, 3, threeImage)
+
+# endregion
+# region Level 6
+playerLevel6 = Player(0, 0, 30, 30, cellBatchLevel6, True, playerImage)
+multiplicationSymbolLevel6 = Symbol(30, 30, 30, 30, cellBatchLevel6, True, '*', multiplicationImage)
+minusSymbolLevel6 = Symbol(60, 60, 30, 30, cellBatchLevel6, True, '-', minusImage)
+sixLevel6 = Number(90, 90, 30, 30, cellBatchLevel6, True, 6, sixImage)
+nineLevel6 = Number(120, 120, 30, 30, cellBatchLevel6, True, 9, nineImage)
+fourLevel6 = Number(150, 150, 30, 30, cellBatchLevel6, True, 4, fourImage)
+twoLevel6 = Number(30, 60, 30, 30, cellBatchLevel6, True, 2, twoImage)
 
 
 # endregion
-
 # endregion
 
 # region Events
@@ -455,9 +516,10 @@ def on_key_press(symbol, modifiers):
     elif symbol == key.SPACE:
         currentLevel += 1
 
-    for i in symbolList:
-        if i.x == eval(f"playerLevel{currentLevel}.x") and i.y == eval(f"playerLevel{currentLevel}.y"):
-            i.Move(eval(f"playerLevel{currentLevel}.dir"))
+    for symbolInWorld in symbolList:
+        if symbolInWorld.x == eval(f"playerLevel{currentLevel}.x") and symbolInWorld.y == eval(
+                f"playerLevel{currentLevel}.y"):
+            symbolInWorld.Move(eval(f"playerLevel{currentLevel}.dir"))
 
 
 @window.event
