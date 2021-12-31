@@ -5,11 +5,11 @@ import os
 import sys
 
 
-# region Function to help make exe
+# region Function to help importing images while making exe
 def ResourcePath(relativePath):
     try:
         basePath = sys._MEIPASS
-    except Exception:
+    except AttributeError:
         basePath = os.path.abspath(".")
 
     return os.path.join(basePath, relativePath)
@@ -19,8 +19,9 @@ def ResourcePath(relativePath):
 
 # region WorldInfo
 window = pyglet.window.Window()
+
 bgMusicPlayer = pyglet.media.Player()
-bgMusic = pyglet.media.load(ResourcePath("Music/Vincent Rubinetti - Quaternions.mp3"))
+bgMusic = pyglet.media.load(ResourcePath("Music/MathtopiaTheme.mp3"))
 bgMusicPlayer.queue(bgMusic)
 bgMusicPlayer.play()
 bgMusicPlayer.loop = True
@@ -36,13 +37,16 @@ numberOfLevels = 6
 pyglet.font.add_file(ResourcePath('Font/Minecraft.ttf'))
 minecraftText = pyglet.font.load('Minecraft')
 
-# endregion
-
-# region Level Specific Content
 titleScreenLabel = pyglet.text.Label('Mathtopia', font_name='Minecraft', font_size=72, x=100, y=225)
 partLabel = pyglet.text.Label('The beginning', font_name='Minecraft', font_size=18, x=100, y=200)
 pressSpaceToContinueLabel = pyglet.text.Label('Press SPACE to continue', font_name='Minecraft', font_size=18, x=162.5,
                                               y=100)
+thankYouLabel = pyglet.text.Label('Thank You for Playing :)', font_name='Minecraft', font_size=20, x=150, y=270)
+creatorLabel = pyglet.text.Label('-Saphereye', font_name='Minecraft', font_size=20, x=150, y=230)
+
+# endregion
+
+# region Level Specific Content
 worldOperatorLabel = pyglet.text.Label('World Operator', font_name='Minecraft', font_size=20, x=412.5, y=300)
 goalLabel = pyglet.text.Label('Goal', font_name='Minecraft', font_size=20, x=462.5, y=150)
 # endregion
@@ -261,28 +265,28 @@ def EvaluateWorld():
             if y == 3:
                 currentLevel = 2
     elif currentLevel == 2:
-        for i in finalH:
-            if i == 9:
+        for x in finalH:
+            if x == 9:
                 currentLevel += 1
-        for i in finalV:
-            if i == 9:
+        for y in finalV:
+            if y == 9:
                 currentLevel += 1
     elif currentLevel == 3:
-        for i in finalH:
-            if i == 9:
+        for x in finalH:
+            if x == 9:
                 currentLevel += 1
-        for i in finalV:
-            if i == 9:
+        for y in finalV:
+            if y == 9:
                 currentLevel += 1
     elif currentLevel == 4:
-        for i in finalH:
-            for j in finalV:
-                if i - j == 6:
+        for x in finalH:
+            for y in finalV:
+                if x - y == 6:
                     currentLevel += 1
     elif currentLevel == 5:
-        for i in finalH:
-            for j in finalV:
-                if i - j == 4:
+        for x in finalH:
+            for y in finalV:
+                if x - y == 4:
                     currentLevel += 1
 
 
@@ -297,7 +301,7 @@ def GoalLabelDraw(goalNumber):
 
 
 def WorldMultiplierDraw(multiplier):
-    worldMultiplierLabel = pyglet.text.Label(multiplier, font_name='Minecraft', font_size=40, x=485, y=270)
+    worldMultiplierLabel = pyglet.text.Label(multiplier, font_name='Minecraft', font_size=20, x=485, y=270)
     worldMultiplierLabel.draw()
 
 
@@ -405,7 +409,8 @@ def CallLevel(levelNumber):
         symbolList = [sixLevel6, nineLevel6, fourLevel6, twoLevel6, minusSymbolLevel6, multiplicationSymbolLevel6]
 
     else:
-        currentLevel = 1
+        window.close()
+        symbolList = []
 
 
 # endregion
@@ -424,6 +429,7 @@ ground = pyglet.sprite.Sprite(backgroundImage, worldX, worldY, batch=groundBatch
 symbolList = []
 
 # region Level 1
+
 playerLevel1 = Player(0, 0, 30, 30, cellBatchLevel1, True, playerImage)
 plusSymbolLevel1 = Symbol(150, 120, 30, 30, cellBatchLevel1, True, '+', plusImage)
 oneLevel1 = Number(120, 90, 30, 30, cellBatchLevel1, True, 1, oneImage)
@@ -442,7 +448,7 @@ sevenLevel2 = Number(60, 30, 30, 30, cellBatchLevel2, True, 7, sevenImage)
 # region Level 3
 playerLevel3 = Player(0, 0, 30, 30, cellBatchLevel3, True, playerImage)
 divisionSymbolLevel3 = Symbol(90, 90, 30, 30, cellBatchLevel3, True, '/', divisionImage)
-twoLevel3 = Number(60, 60, 30, 30, cellBatchLevel3, True, 2, twoImage)
+twoLevel3 = Number(60, 120, 30, 30, cellBatchLevel3, True, 2, twoImage)
 sevenLevel3 = Number(180, 90, 30, 30, cellBatchLevel3, True, 7, sevenImage)
 threeLevel3 = Number(120, 150, 30, 30, cellBatchLevel3, True, 3, threeImage)
 
@@ -451,7 +457,7 @@ threeLevel3 = Number(120, 150, 30, 30, cellBatchLevel3, True, 3, threeImage)
 playerLevel4 = Player(0, 0, 30, 30, cellBatchLevel4, True, playerImage)
 multiplicationSymbolLevel4 = Symbol(30, 30, 30, 30, cellBatchLevel4, True, '*', multiplicationImage)
 plusSymbolLevel4 = Symbol(60, 60, 30, 30, cellBatchLevel4, True, '+', plusImage)
-fiveLevel4 = Number(90, 90, 30, 30, cellBatchLevel4, True, 5, fiveImage)
+fiveLevel4 = Number(120, 90, 30, 30, cellBatchLevel4, True, 5, fiveImage)
 twoLevel4 = Number(30, 60, 30, 30, cellBatchLevel4, True, 2, twoImage)
 sevenLevel4 = Number(90, 30, 30, 30, cellBatchLevel4, True, 7, sevenImage)
 threeLevel4 = Number(90, 60, 30, 30, cellBatchLevel4, True, 3, threeImage)
@@ -459,7 +465,7 @@ threeLevel4 = Number(90, 60, 30, 30, cellBatchLevel4, True, 3, threeImage)
 # region Level 5
 playerLevel5 = Player(0, 0, 30, 30, cellBatchLevel5, True, playerImage)
 multiplicationSymbolLevel5 = Symbol(60, 30, 30, 30, cellBatchLevel5, True, '*', multiplicationImage)
-plusSymbolLevel5 = Symbol(60, 150, 30, 30, cellBatchLevel5, True, '+', plusImage)
+plusSymbolLevel5 = Symbol(120, 150, 30, 30, cellBatchLevel5, True, '+', plusImage)
 fiveLevel5 = Number(30, 90, 30, 30, cellBatchLevel5, True, 5, fiveImage)
 twoLevel5 = Number(90, 90, 30, 30, cellBatchLevel5, True, 2, twoImage)
 sevenLevel5 = Number(150, 30, 30, 30, cellBatchLevel5, True, 7, sevenImage)
@@ -489,6 +495,9 @@ def on_draw():
         titleScreenLabel.draw()
         partLabel.draw()
         pressSpaceToContinueLabel.draw()
+    elif currentLevel == numberOfLevels+1:
+        thankYouLabel.draw()
+        creatorLabel.draw()
     else:
         CallLevel(currentLevel)
         groundBatch.draw()
