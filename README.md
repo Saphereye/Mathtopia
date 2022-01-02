@@ -11,4 +11,4 @@ Move around with WASD or arrow keys to assemble blocks into meaningful equations
 1) Python
 2) Pyglet module (python)
 
-## ![You can download the executable here](https://saphereye.itch.io/mathtopia)
+## [You can download the executable here](https://saphereye.itch.io/mathtopia)
