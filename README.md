@@ -13,5 +13,5 @@ Move around with WASD or arrow keys to assemble blocks into meaningful equations
 
 ## [You can download the executable here](https://saphereye.itch.io/mathtopia)
 
-My Entry For : Gaming Frontier Challenge (Game Development Track) Shaastra - 2022 Indian Institute of Technology (IIT), Madras
+My Entry For : Gaming Frontier Challenge (Game Development Track) Shaastra - 2022 Indian Institute of Technology (IIT), Madras  
 Results : Selected for final round among 8 other participants
