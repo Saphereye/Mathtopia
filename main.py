@@ -1,3 +1,5 @@
+from typing import Union, Optional, List
+
 import pyglet
 from pyglet.window import key
 from random import shuffle
@@ -6,7 +8,7 @@ import sys
 
 
 # region Function to help importing images while making exe
-def ResourcePath(relativePath):
+def ResourcePath(relativePath) -> Union[bytes, str]:
     try:
         basePath = sys._MEIPASS
     except AttributeError:
@@ -20,33 +22,49 @@ def ResourcePath(relativePath):
 # region WorldInfo
 window = pyglet.window.Window()
 
+# Music Player Details
 bgMusicPlayer = pyglet.media.Player()
 bgMusic = pyglet.media.load(ResourcePath("Music/MathtopiaTheme.mp3"))
 bgMusicPlayer.queue(bgMusic)
 bgMusicPlayer.play()
 bgMusicPlayer.loop = True
 
+# World Dimensions
 worldWidth = 300
 worldHeight = 300
 worldX = 50
 worldY = 50
 
+# Level Information
 currentLevel = 0
 numberOfLevels = 6
+# Answers of levels in format (Answer, World Symbol, Level Name)
+levelData = [(0, 0, 'Title Screen'),
+             (3, None, '1+2=?'),
+             (9, None, 'Trinomial'),
+             (9, None, 'Vinculum'),
+             (6, '-', 'Complexity++'),
+             (4, '-', 'Convergence'),
+             (7, '/', 'Nice 7')]
 
+# Adding font, to be used for text
 pyglet.font.add_file(ResourcePath('Font/Minecraft.ttf'))
 minecraftText = pyglet.font.load('Minecraft')
 
+# Title screen text
 titleScreenLabel = pyglet.text.Label('Mathtopia', font_name='Minecraft', font_size=72, x=100, y=225)
 partLabel = pyglet.text.Label('The beginning', font_name='Minecraft', font_size=18, x=100, y=200)
 pressSpaceToContinueLabel = pyglet.text.Label('Press SPACE to continue', font_name='Minecraft', font_size=18, x=162.5,
                                               y=100)
+
+# End screen text
 thankYouLabel = pyglet.text.Label('Thank You for Playing :)', font_name='Minecraft', font_size=20, x=150, y=270)
 creatorLabel = pyglet.text.Label('-Saphereye', font_name='Minecraft', font_size=20, x=150, y=230)
 
 # endregion
 
 # region Level Specific Content
+# 'World operator' and 'Goal' labels with their positions
 worldOperatorLabel = pyglet.text.Label('World Operator', font_name='Minecraft', font_size=20, x=412.5, y=300)
 goalLabel = pyglet.text.Label('Goal', font_name='Minecraft', font_size=20, x=462.5, y=150)
 # endregion
@@ -76,25 +94,6 @@ backgroundImage = pyglet.image.load(ResourcePath('Images/Background.png'))
 # endregion
 
 # region Classes
-class List2D:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.value = [None for _ in range(width * height)]
-        """
-        (1,3) (2,3) (3,3)       6 7 8
-        (1,2) (2,2) (3,2)   =>  3 4 5   => [0 1 2 3 4 5 6 7 8]
-        (1,1) (2,1) (3,1)       0 1 2 
-        """
-
-    def Put(self, x, y, element):
-        # x and y are inserted as 1...n
-        self.value[(x - 1) + (y - 1) * self.width] = element
-
-    def Get(self, x, y):
-        return self.value[(x - 1) + (y - 1) * self.width]
-
-
 class Cell:
     def __init__(self, x, y, width, height, batch, isVisible, spriteImage):
         self.isVisible = isVisible
@@ -119,6 +118,28 @@ class Cell:
         if self.isVisible:
             worldMap.Put(self.x, self.y, self)
             self.obj = pyglet.sprite.Sprite(self.image, self.x + worldX, self.y + worldY, batch=self.batch)
+
+
+class List2D:
+    def __init__(self, width, height) -> None:
+        self.width = width
+        self.height = height
+        self.value = [None for _ in range(width * height)]
+        """
+        (1,3) (2,3) (3,3)       6 7 8
+        (1,2) (2,2) (3,2)   =>  3 4 5   => [0 1 2 3 4 5 6 7 8]
+        (1,1) (2,1) (3,1)       0 1 2 
+        """
+
+    def Put(self, x, y, element):
+        # Insert element at position (x,y)
+        # x and y are inserted as 1...n
+        self.value[(x - 1) + (y - 1) * self.width] = element
+
+    def Get(self, x, y):
+        # Call value at position (x,y)
+        # Possible returns :- None, Player, Symbol, Number
+        return self.value[(x - 1) + (y - 1) * self.width]
 
 
 class Player(Cell):
@@ -201,7 +222,7 @@ class Number(Symbol):
 # endregion
 
 # region Helper Functions
-def EvaluateWorld():
+def EvaluateWorld() -> None:
     global worldMap, currentLevel
     executableStringsH = []
     executableStringsV = []
@@ -221,8 +242,9 @@ def EvaluateWorld():
         if appendableString != '':
             executableStringsH.append(appendableString)
         appendableString = ''
-    for i in range(len(executableStringsH)):
-        executableStringsH[i] = executableStringsH[i].strip()
+
+    for index in range(len(executableStringsH)):
+        executableStringsH[index] = executableStringsH[index].strip()
 
     # Vertical Evaluation
     for x in range(0, worldWidth + 1, 30):
@@ -238,58 +260,44 @@ def EvaluateWorld():
         if appendableString != '':
             executableStringsV.append(appendableString)
         appendableString = ''
-    for i in range(len(executableStringsV)):
-        executableStringsV[i] = executableStringsV[i].strip()
+    for index in range(len(executableStringsV)):
+        executableStringsV[index] = executableStringsV[index].strip()
 
     # remove +3 from executableStrings
     finalH = []
     finalV = []
-    for i in executableStringsH:
+    for equation in executableStringsH:
         try:
-            finalH.append(eval(i))
+            finalH.append(eval(equation))
         except SyntaxError:
             continue
-    for i in executableStringsV:
+    for equation in executableStringsV:
         try:
-            finalV.append(eval(i))
+            finalV.append(eval(equation))
         except SyntaxError:
             continue
-    # =================================CAUTION==========================================
-    # As H and V both are traversed, current level CAN be increased twice in same level
-    # =================================CAUTION==========================================
-    if currentLevel == 1:
+    """
+    (Answer, Operator)
+    If operator is None, only check rows and columns
+    else apply operator 
+    """
+    currentAnswer = levelData[currentLevel][0]
+    currentSymbol = levelData[currentLevel][1]
+    if currentSymbol is None:
         for x in finalH:
-            if x == 3:
-                currentLevel = 2
-        for y in finalV:
-            if y == 3:
-                currentLevel = 2
-    elif currentLevel == 2:
-        for x in finalH:
-            if x == 9:
+            if x == currentAnswer:
                 currentLevel += 1
         for y in finalV:
-            if y == 9:
+            if y == currentAnswer:
                 currentLevel += 1
-    elif currentLevel == 3:
-        for x in finalH:
-            if x == 9:
-                currentLevel += 1
-        for y in finalV:
-            if y == 9:
-                currentLevel += 1
-    elif currentLevel == 4:
+    else:
         for x in finalH:
             for y in finalV:
-                if x - y == 6:
-                    currentLevel += 1
-    elif currentLevel == 5:
-        for x in finalH:
-            for y in finalV:
-                if x - y == 4:
+                if eval(f'x {currentSymbol} y') == currentAnswer:
                     currentLevel += 1
 
 
+# Drawing the text on the screen
 def LevelNameLabelDraw(labelText, x, y):
     levelTitle = pyglet.text.Label(labelText, font_name='Minecraft', font_size=60, x=x, y=y)
     levelTitle.draw()
@@ -305,6 +313,7 @@ def WorldMultiplierDraw(multiplier):
     worldMultiplierLabel.draw()
 
 
+# Update screen with current level
 def CallLevel(levelNumber):
     global currentLevel, symbolList, worldMap
     if levelNumber == 0:
@@ -495,7 +504,7 @@ def on_draw():
         titleScreenLabel.draw()
         partLabel.draw()
         pressSpaceToContinueLabel.draw()
-    elif currentLevel == numberOfLevels+1:
+    elif currentLevel == numberOfLevels + 1:
         thankYouLabel.draw()
         creatorLabel.draw()
     else:
@@ -527,7 +536,7 @@ def on_key_press(symbol, modifiers):
 
     for symbolInWorld in symbolList:
         if symbolInWorld.x == eval(f"playerLevel{currentLevel}.x") and symbolInWorld.y == eval(
-                f"playerLevel{currentLevel}.y"):
+            f"playerLevel{currentLevel}.y"):
             symbolInWorld.Move(eval(f"playerLevel{currentLevel}.dir"))
 
 
