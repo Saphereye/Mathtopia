@@ -1,30 +1,32 @@
-from typing import Union, Optional, List
-
 import pyglet
-from pyglet.window import key
-from random import shuffle
 import os
 import sys
+from pyglet.window import key
+from typing import Union, Optional, List
+from dataclasses import dataclass
 
+def ResourcePath(relativePath: str) -> Union[bytes, str]:
+    # Get the directory of the current script
+    currentDirectory = os.path.dirname(os.path.abspath(__file__))
 
-# region Function to help importing images while making exe
-def ResourcePath(relativePath) -> Union[bytes, str]:
+    # Move one directory up and then into 'Assets'
+    assetsDirectory = os.path.join(currentDirectory, 'Assets')
+
     try:
+        # If running from a PyInstaller bundle, use the temporary _MEIPASS directory
         basePath = sys._MEIPASS
     except AttributeError:
-        basePath = os.path.abspath(".")
+        # Otherwise, use the absolute path to the assets directory
+        basePath = os.path.abspath(assetsDirectory)
 
+    # Return the full path to the resource
     return os.path.join(basePath, relativePath)
 
-
-# endregion
-
-# region WorldInfo
 window = pyglet.window.Window()
 
 # Music Player Details
 bgMusicPlayer = pyglet.media.Player()
-bgMusic = pyglet.media.load(ResourcePath("Music/MathtopiaTheme.mp3"))
+bgMusic = pyglet.media.load(ResourcePath("Music/MathtopiaTheme.wav"))
 bgMusicPlayer.queue(bgMusic)
 bgMusicPlayer.play()
 bgMusicPlayer.loop = True
@@ -38,14 +40,6 @@ worldY = 50
 # Level Information
 currentLevel = 0
 numberOfLevels = 6
-# Answers of levels in format (Answer, World Symbol, Level Name)
-levelData = [(0, 0, 'Title Screen'),
-             (3, None, '1+2=?'),
-             (9, None, 'Trinomial'),
-             (9, None, 'Vinculum'),
-             (6, '-', 'Complexity++'),
-             (4, '-', 'Convergence'),
-             (7, '/', 'Nice 7')]
 
 # Adding font, to be used for text
 pyglet.font.add_file(ResourcePath('Font/Minecraft.ttf'))
@@ -61,15 +55,11 @@ pressSpaceToContinueLabel = pyglet.text.Label('Press SPACE to continue', font_na
 thankYouLabel = pyglet.text.Label('Thank You for Playing :)', font_name='Minecraft', font_size=20, x=150, y=270)
 creatorLabel = pyglet.text.Label('-Saphereye', font_name='Minecraft', font_size=20, x=150, y=230)
 
-# endregion
 
-# region Level Specific Content
 # 'World operator' and 'Goal' labels with their positions
 worldOperatorLabel = pyglet.text.Label('World Operator', font_name='Minecraft', font_size=20, x=412.5, y=300)
 goalLabel = pyglet.text.Label('Goal', font_name='Minecraft', font_size=20, x=462.5, y=150)
-# endregion
 
-# region Loading Images
 playerImage = pyglet.image.load(ResourcePath('Images/Player.png'))
 
 plusImage = pyglet.image.load(ResourcePath('Images/Plus.png'))
@@ -90,10 +80,6 @@ zeroImage = pyglet.image.load(ResourcePath('Images/Zero.png'))
 
 backgroundImage = pyglet.image.load(ResourcePath('Images/Background.png'))
 
-
-# endregion
-
-# region Classes
 class Cell:
     def __init__(self, x, y, width, height, batch, isVisible, spriteImage):
         self.isVisible = isVisible
@@ -114,9 +100,9 @@ class Cell:
         # if Number
         self.number = 1
 
-    def Draw(self):
+    def draw(self):
         if self.isVisible:
-            worldMap.Put(self.x, self.y, self)
+            worldMap.put(self.x, self.y, self)
             self.obj = pyglet.sprite.Sprite(self.image, self.x + worldX, self.y + worldY, batch=self.batch)
 
 
@@ -128,15 +114,15 @@ class List2D:
         """
         (1,3) (2,3) (3,3)       6 7 8
         (1,2) (2,2) (3,2)   =>  3 4 5   => [0 1 2 3 4 5 6 7 8]
-        (1,1) (2,1) (3,1)       0 1 2 
+        (1,1) (2,1) (3,1)       0 1 2
         """
 
-    def Put(self, x, y, element):
+    def put(self, x, y, element):
         # Insert element at position (x,y)
         # x and y are inserted as 1...n
         self.value[(x - 1) + (y - 1) * self.width] = element
 
-    def Get(self, x, y):
+    def get(self, x, y):
         # Call value at position (x,y)
         # Possible returns :- None, Player, Symbol, Number
         return self.value[(x - 1) + (y - 1) * self.width]
@@ -148,39 +134,39 @@ class Player(Cell):
     def __init__(self, x, y, width, height, batch, isVisible, spriteImage):
         super().__init__(x, y, width, height, batch, isVisible, spriteImage)
 
-    def Move(self, x, y):
-        worldMap.Put(self.x, self.y, None)
+    def move(self, x, y):
+        worldMap.put(self.x, self.y, None)
         self.x = x
         self.y = y
-        worldMap.Put(self.x, self.y, self)
-        self.Draw()
+        worldMap.put(self.x, self.y, self)
+        self.draw()
 
-    def MoveUp(self):
-        worldMap.Put(self.x, self.y, None)
+    def move_up(self):
+        worldMap.put(self.x, self.y, None)
         self.y = self.y + self.height if (self.y + self.height) < worldHeight else (self.y + self.height) % worldHeight
-        worldMap.Put(self.x, self.y, self)
-        self.Draw()
+        worldMap.put(self.x, self.y, self)
+        self.draw()
         self.dir = "UP"
 
-    def MoveDown(self):
-        worldMap.Put(self.x, self.y, None)
+    def move_down(self):
+        worldMap.put(self.x, self.y, None)
         self.y = self.y - self.height if (self.y - self.height) >= 0 else (self.y - self.height) % worldHeight
-        worldMap.Put(self.x, self.y, self)
-        self.Draw()
+        worldMap.put(self.x, self.y, self)
+        self.draw()
         self.dir = "DOWN"
 
-    def MoveRight(self):
-        worldMap.Put(self.x, self.y, None)
+    def move_right(self):
+        worldMap.put(self.x, self.y, None)
         self.x = self.x + self.width if (self.x + self.width) < worldWidth else (self.x + self.width) % worldWidth
-        worldMap.Put(self.x, self.y, self)
-        self.Draw()
+        worldMap.put(self.x, self.y, self)
+        self.draw()
         self.dir = "RIGHT"
 
-    def MoveLeft(self):
-        worldMap.Put(self.x, self.y, None)
+    def move_left(self):
+        worldMap.put(self.x, self.y, None)
         self.x = self.x - self.width if (self.x - self.width) >= 0 else (self.x - self.width) % worldWidth
-        worldMap.Put(self.x, self.y, self)
-        self.Draw()
+        worldMap.put(self.x, self.y, self)
+        self.draw()
         self.dir = "LEFT"
 
 
@@ -190,8 +176,8 @@ class Symbol(Cell):
         self.isSymbol = True
         self.symbol = inputSymbol
 
-    def Move(self, direction):
-        worldMap.Put(self.x, self.y, None)
+    def move(self, direction):
+        worldMap.put(self.x, self.y, None)
         if direction == "UP":
             self.y = self.y + self.height if (self.y + self.height) < worldHeight else \
                 (self.y + self.height) % worldHeight
@@ -206,10 +192,9 @@ class Symbol(Cell):
             if i == self:
                 pass
             elif i.x == self.x and i.y == self.y:
-                i.Move(self.dir)
-        worldMap.Put(self.x, self.y, self)
-        self.Draw()
-
+                i.move(self.dir)
+        worldMap.put(self.x, self.y, self)
+        self.draw()
 
 class Number(Symbol):
     def __init__(self, x, y, width, height, batch, isVisible, inputSymbol, spriteImage):
@@ -218,11 +203,7 @@ class Number(Symbol):
         self.number = str(inputSymbol)
         self.image = spriteImage
 
-
-# endregion
-
-# region Helper Functions
-def EvaluateWorld() -> None:
+def evaluate_world() -> None:
     global worldMap, currentLevel
     executableStringsH = []
     executableStringsV = []
@@ -231,7 +212,7 @@ def EvaluateWorld() -> None:
     # Horizontal Evaluation
     for y in range(0, worldHeight + 1, 30):
         for x in range(0, worldWidth + 1, 30):
-            item = worldMap.Get(x, y)
+            item = worldMap.get(x, y)
             if (item is None) or (type(item) is Player):
                 if appendableString != '':
                     executableStringsH.append(appendableString)
@@ -249,7 +230,7 @@ def EvaluateWorld() -> None:
     # Vertical Evaluation
     for x in range(0, worldWidth + 1, 30):
         for y in range(worldHeight, 0, -30):
-            item = worldMap.Get(x, y)
+            item = worldMap.get(x, y)
             if item is None:
                 if appendableString != '':
                     executableStringsV.append(appendableString)
@@ -279,7 +260,7 @@ def EvaluateWorld() -> None:
     """
     (Answer, Operator)
     If operator is None, only check rows and columns
-    else apply operator 
+    else apply operator
     """
     currentAnswer = levelData[currentLevel][0]
     currentSymbol = levelData[currentLevel][1]
@@ -298,23 +279,29 @@ def EvaluateWorld() -> None:
 
 
 # Drawing the text on the screen
-def LevelNameLabelDraw(labelText, x, y):
+def level_name_label_draw(labelText, x, y):
     levelTitle = pyglet.text.Label(labelText, font_name='Minecraft', font_size=60, x=x, y=y)
     levelTitle.draw()
 
-
-def GoalLabelDraw(goalNumber):
+def goal_label_draw(goalNumber):
     goalNumberLabel = pyglet.text.Label(str(goalNumber), font_name='Minecraft', font_size=18, x=485, y=120)
     goalNumberLabel.draw()
 
-
-def WorldMultiplierDraw(multiplier):
+def world_multiplier_draw(multiplier):
     worldMultiplierLabel = pyglet.text.Label(multiplier, font_name='Minecraft', font_size=20, x=485, y=270)
     worldMultiplierLabel.draw()
 
+# Answers of levels in format (Answer, World Symbol, Level Name)
+levelData = [(0, 0, 'Title Screen'),
+             (3, None, '1+2=?'),
+             (9, None, 'Trinomial'),
+             (9, None, 'Vinculum'),
+             (6, '-', 'Complexity++'),
+             (4, '-', 'Convergence'),
+             (7, '/', 'Nice 7')]
 
 # Update screen with current level
-def CallLevel(levelNumber):
+def call_level(levelNumber):
     global currentLevel, symbolList, worldMap
     if levelNumber == 0:
         symbolList = []
@@ -323,38 +310,38 @@ def CallLevel(levelNumber):
         1+2 = 3
         2+1 = 3
         """
-        LevelNameLabelDraw('1+2=?', 50, 375)
-        GoalLabelDraw(3)
-        playerLevel1.Draw()
-        plusSymbolLevel1.Draw()
-        oneLevel1.Draw()
-        twoLevel1.Draw()
+        level_name_label_draw('1+2=?', 50, 375)
+        goal_label_draw(3)
+        playerLevel1.draw()
+        plusSymbolLevel1.draw()
+        oneLevel1.draw()
+        twoLevel1.draw()
         symbolList = [plusSymbolLevel1, twoLevel1, oneLevel1]
     elif levelNumber == 2:
         """
         6-4+7 = 9
         7-4+6 = 9
         """
-        LevelNameLabelDraw('Trinomial', 50, 375)
-        GoalLabelDraw(9)
-        playerLevel2.Draw()
-        sixLevel2.Draw()
-        fourLevel2.Draw()
-        sevenLevel2.Draw()
-        minusSymbolLevel2.Draw()
-        plusSymbolLevel2.Draw()
+        level_name_label_draw('Trinomial', 50, 375)
+        goal_label_draw(9)
+        playerLevel2.draw()
+        sixLevel2.draw()
+        fourLevel2.draw()
+        sevenLevel2.draw()
+        minusSymbolLevel2.draw()
+        plusSymbolLevel2.draw()
         symbolList = [plusSymbolLevel2, minusSymbolLevel2, sevenLevel2, fourLevel2, sixLevel2]
     elif levelNumber == 3:
         """
         27/3 = 9
         """
-        LevelNameLabelDraw("Vinculum", 50, 375)
-        GoalLabelDraw(9)
-        playerLevel3.Draw()
-        twoLevel3.Draw()
-        sevenLevel3.Draw()
-        threeLevel3.Draw()
-        divisionSymbolLevel3.Draw()
+        level_name_label_draw("Vinculum", 50, 375)
+        goal_label_draw(9)
+        playerLevel3.draw()
+        twoLevel3.draw()
+        sevenLevel3.draw()
+        threeLevel3.draw()
+        divisionSymbolLevel3.draw()
         symbolList = [twoLevel3, sevenLevel3, threeLevel3, divisionSymbolLevel3]
     elif levelNumber == 4:
         """
@@ -364,16 +351,16 @@ def CallLevel(levelNumber):
         5*2-7+3 = 6
         7+5-3*2 = 6
         """
-        LevelNameLabelDraw("Complexity++", 50, 375)
-        GoalLabelDraw(6)
-        WorldMultiplierDraw('-')
-        playerLevel4.Draw()
-        fiveLevel4.Draw()
-        twoLevel4.Draw()
-        sevenLevel4.Draw()
-        threeLevel4.Draw()
-        plusSymbolLevel4.Draw()
-        multiplicationSymbolLevel4.Draw()
+        level_name_label_draw("Complexity++", 50, 375)
+        goal_label_draw(6)
+        world_multiplier_draw('-')
+        playerLevel4.draw()
+        fiveLevel4.draw()
+        twoLevel4.draw()
+        sevenLevel4.draw()
+        threeLevel4.draw()
+        plusSymbolLevel4.draw()
+        multiplicationSymbolLevel4.draw()
         symbolList = [fiveLevel4, twoLevel4, sevenLevel4, threeLevel4, plusSymbolLevel4, multiplicationSymbolLevel4]
     elif levelNumber == 5:
         """
@@ -383,16 +370,16 @@ def CallLevel(levelNumber):
         25-7*3 = 4
         5-7+2*3 = 4
         """
-        LevelNameLabelDraw("Convergence", 50, 375)
-        GoalLabelDraw(4)
-        WorldMultiplierDraw('-')
-        playerLevel5.Draw()
-        fiveLevel5.Draw()
-        twoLevel5.Draw()
-        sevenLevel5.Draw()
-        threeLevel5.Draw()
-        plusSymbolLevel5.Draw()
-        multiplicationSymbolLevel5.Draw()
+        level_name_label_draw("Convergence", 50, 375)
+        goal_label_draw(4)
+        world_multiplier_draw('-')
+        playerLevel5.draw()
+        fiveLevel5.draw()
+        twoLevel5.draw()
+        sevenLevel5.draw()
+        threeLevel5.draw()
+        plusSymbolLevel5.draw()
+        multiplicationSymbolLevel5.draw()
         symbolList = [fiveLevel5, twoLevel5, sevenLevel5, threeLevel5, plusSymbolLevel5, multiplicationSymbolLevel5]
 
     elif levelNumber == 6:
@@ -405,16 +392,16 @@ def CallLevel(levelNumber):
         9*2/6+4 = 7
         4+2/6*9 = 7
         2*9/6+4 = 7"""
-        LevelNameLabelDraw("Nice 7", 50, 375)
-        GoalLabelDraw(7)
-        WorldMultiplierDraw('÷')
-        playerLevel6.Draw()
-        minusSymbolLevel6.Draw()
-        multiplicationSymbolLevel6.Draw()
-        sixLevel6.Draw()
-        nineLevel6.Draw()
-        fourLevel6.Draw()
-        twoLevel6.Draw()
+        level_name_label_draw("Nice 7", 50, 375)
+        goal_label_draw(7)
+        world_multiplier_draw('÷')
+        playerLevel6.draw()
+        minusSymbolLevel6.draw()
+        multiplicationSymbolLevel6.draw()
+        sixLevel6.draw()
+        nineLevel6.draw()
+        fourLevel6.draw()
+        twoLevel6.draw()
         symbolList = [sixLevel6, nineLevel6, fourLevel6, twoLevel6, minusSymbolLevel6, multiplicationSymbolLevel6]
 
     else:
@@ -422,30 +409,23 @@ def CallLevel(levelNumber):
         symbolList = []
 
 
-# endregion
 
-# region Batches
 groundBatch = pyglet.graphics.Batch()
 for i in range(1, numberOfLevels + 1):
     exec(f"cellBatchLevel{i} = pyglet.graphics.Batch()")
 userInterface = pyglet.graphics.Batch()
-# endregion
 
 worldMap = List2D(worldWidth, worldHeight)
 ground = pyglet.sprite.Sprite(backgroundImage, worldX, worldY, batch=groundBatch)
 
-# region Symbols
 symbolList = []
 
-# region Level 1
 
 playerLevel1 = Player(0, 0, 30, 30, cellBatchLevel1, True, playerImage)
 plusSymbolLevel1 = Symbol(150, 120, 30, 30, cellBatchLevel1, True, '+', plusImage)
 oneLevel1 = Number(120, 90, 30, 30, cellBatchLevel1, True, 1, oneImage)
 twoLevel1 = Number(120, 150, 30, 30, cellBatchLevel1, True, 2, twoImage)
 
-# endregion
-# region Level 2
 playerLevel2 = Player(0, 0, 30, 30, cellBatchLevel2, True, playerImage)
 plusSymbolLevel2 = Symbol(60, 60, 30, 30, cellBatchLevel2, True, '+', plusImage)
 minusSymbolLevel2 = Symbol(150, 150, 30, 30, cellBatchLevel2, True, '-', minusImage)
@@ -453,16 +433,12 @@ sixLevel2 = Number(60, 90, 30, 30, cellBatchLevel2, True, 6, sixImage)
 fourLevel2 = Number(30, 60, 30, 30, cellBatchLevel2, True, 4, fourImage)
 sevenLevel2 = Number(60, 30, 30, 30, cellBatchLevel2, True, 7, sevenImage)
 
-# endregion
-# region Level 3
 playerLevel3 = Player(0, 0, 30, 30, cellBatchLevel3, True, playerImage)
 divisionSymbolLevel3 = Symbol(90, 90, 30, 30, cellBatchLevel3, True, '/', divisionImage)
 twoLevel3 = Number(60, 120, 30, 30, cellBatchLevel3, True, 2, twoImage)
 sevenLevel3 = Number(180, 90, 30, 30, cellBatchLevel3, True, 7, sevenImage)
 threeLevel3 = Number(120, 150, 30, 30, cellBatchLevel3, True, 3, threeImage)
 
-# endregion
-# region Level 4
 playerLevel4 = Player(0, 0, 30, 30, cellBatchLevel4, True, playerImage)
 multiplicationSymbolLevel4 = Symbol(30, 30, 30, 30, cellBatchLevel4, True, '*', multiplicationImage)
 plusSymbolLevel4 = Symbol(60, 60, 30, 30, cellBatchLevel4, True, '+', plusImage)
@@ -470,8 +446,6 @@ fiveLevel4 = Number(120, 90, 30, 30, cellBatchLevel4, True, 5, fiveImage)
 twoLevel4 = Number(30, 60, 30, 30, cellBatchLevel4, True, 2, twoImage)
 sevenLevel4 = Number(90, 30, 30, 30, cellBatchLevel4, True, 7, sevenImage)
 threeLevel4 = Number(90, 60, 30, 30, cellBatchLevel4, True, 3, threeImage)
-# endregion
-# region Level 5
 playerLevel5 = Player(0, 0, 30, 30, cellBatchLevel5, True, playerImage)
 multiplicationSymbolLevel5 = Symbol(60, 30, 30, 30, cellBatchLevel5, True, '*', multiplicationImage)
 plusSymbolLevel5 = Symbol(120, 150, 30, 30, cellBatchLevel5, True, '+', plusImage)
@@ -480,8 +454,6 @@ twoLevel5 = Number(90, 90, 30, 30, cellBatchLevel5, True, 2, twoImage)
 sevenLevel5 = Number(150, 30, 30, 30, cellBatchLevel5, True, 7, sevenImage)
 threeLevel5 = Number(30, 60, 30, 30, cellBatchLevel5, True, 3, threeImage)
 
-# endregion
-# region Level 6
 playerLevel6 = Player(0, 0, 30, 30, cellBatchLevel6, True, playerImage)
 multiplicationSymbolLevel6 = Symbol(30, 30, 30, 30, cellBatchLevel6, True, '*', multiplicationImage)
 minusSymbolLevel6 = Symbol(60, 60, 30, 30, cellBatchLevel6, True, '-', minusImage)
@@ -491,16 +463,13 @@ fourLevel6 = Number(150, 150, 30, 30, cellBatchLevel6, True, 4, fourImage)
 twoLevel6 = Number(30, 60, 30, 30, cellBatchLevel6, True, 2, twoImage)
 
 
-# endregion
-# endregion
 
-# region Events
 @window.event
 def on_draw():
     global currentLevel, symbolList
     window.clear()
     if currentLevel == 0:
-        CallLevel(0)
+        call_level(0)
         titleScreenLabel.draw()
         partLabel.draw()
         pressSpaceToContinueLabel.draw()
@@ -508,7 +477,7 @@ def on_draw():
         thankYouLabel.draw()
         creatorLabel.draw()
     else:
-        CallLevel(currentLevel)
+        call_level(currentLevel)
         groundBatch.draw()
         try:
             eval(f"cellBatchLevel{currentLevel}.draw()")
@@ -524,27 +493,26 @@ def on_key_press(symbol, modifiers):
     if symbol == key.ESCAPE:
         window.close()
     elif symbol == key.W or symbol == key.UP:
-        eval(f"playerLevel{currentLevel}.MoveUp()")
+        eval(f"playerLevel{currentLevel}.move_up()")
     elif symbol == key.A or symbol == key.LEFT:
-        eval(f"playerLevel{currentLevel}.MoveLeft()")
+        eval(f"playerLevel{currentLevel}.move_left()")
     elif symbol == key.D or symbol == key.RIGHT:
-        eval(f"playerLevel{currentLevel}.MoveRight()")
+        eval(f"playerLevel{currentLevel}.move_right()")
     elif symbol == key.S or symbol == key.DOWN:
-        eval(f"playerLevel{currentLevel}.MoveDown()")
+        eval(f"playerLevel{currentLevel}.move_down()")
     elif symbol == key.SPACE:
         currentLevel += 1
 
     for symbolInWorld in symbolList:
         if symbolInWorld.x == eval(f"playerLevel{currentLevel}.x") and symbolInWorld.y == eval(
             f"playerLevel{currentLevel}.y"):
-            symbolInWorld.Move(eval(f"playerLevel{currentLevel}.dir"))
+            symbolInWorld.move(eval(f"playerLevel{currentLevel}.dir"))
 
 
 @window.event
 def on_key_release(symbol, modifier):
-    EvaluateWorld()
+    evaluate_world()
 
 
-# endregion
 
 pyglet.app.run()
